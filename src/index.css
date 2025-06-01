@@ -6,6 +6,28 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+body.dark {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark .sidebar {
+  background-color: #1f1f1f;
+  color: #eee;
+}
+
+body.dark .sidebar a {
+  color: #ccc;
+}
+
+body.dark .sidebar a:hover {
+  background-color: #333;
+}
+
+body.large-font {
+  font-size: 18px;
+}
+
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
