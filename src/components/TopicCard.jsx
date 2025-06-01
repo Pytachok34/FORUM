@@ -1,11 +1,13 @@
+// src/components/TopicCard.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
 
-const TopicCard = ({ topic }) => (
-    <Link to={`/topic/${topic.id}`} className="topic-card">
-        <h3>{topic.title}</h3>
-        <p>{topic.preview}</p>
-    </Link>
+const TopicCard = ({ title, author, description, onClick }) => (
+    <div className="topic-card" onClick={onClick} style={{ cursor: 'pointer' }}>
+        <h3>{title}</h3>
+        <p>{description}</p>
+        <small>Автор: {author || 'Неизвестно'}</small>
+    </div>
 );
 
 export default TopicCard;
+

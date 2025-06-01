@@ -1,49 +1,45 @@
-import React, { useState } from 'react';
-import SideBar from './SideBar';
-import Breadcrumbs from './Breadcrumbs';
-import Tabs from './Tabs';
-import './ForumPage.css';
-
-import { Link } from 'react-router-dom';
-
-
-// Пример компонента TopicList с кликабельными темами
-const TopicList = ({ topics }) => {
-    return (
-        <ul className="topic-list">
-            {topics.map(topic => (
-                <li key={topic.id} className="topic-item">
-                    <Link to={`/topic/${topic.id}`} className="topic-link">
-                        {topic.title}
-                    </Link>
-                    <div className="topic-meta">
-                        Автор: {topic.author} | Последний комментарий: {topic.lastCommentDate}
-                    </div>
-                </li>
-            ))}
-        </ul>
-    );
-};
+import React, { useState, useEffect } from 'react';
+import { fetchTopics } from '../api/topics';
+import SideBar from '../components/SideBar';
+import Breadcrumbs from '../components/Breadcrumbs';
+import TopicList from '../components/TopicList';
+import './ForumPage.css'
+import {useNavigate} from "react-router-dom";
 
 const ForumPage = () => {
-    const tabs = ['Все темы', 'Мои темы'];
-    const [activeTab, setActiveTab] = useState(tabs[0]);
+    const [topics, setTopics] = useState([]);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
-    // Пример фильтрации тем по вкладке
-    const allTopics = [
-        { id: 1, title: 'Помогите с алгоритмом быстрой сортировки на C++', author: 'Иван Иванов', lastCommentDate: '2025-06-01' },
-        { id: 2, title: 'Лабораторная работа №5 по базам данных - сложности с JOIN', author: 'Сергей Кузнецов', lastCommentDate: '2025-06-02' },
-    ];
+    useEffect(() => {
+        async function loadTopics() {
+            try {
+                const data = await fetchTopics();
+                setTopics(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+            }
+        }
+        loadTopics();
+    }, []);
+    const handleTopicClick = (id) => {
+        navigate(`/topic/${id}`);
+    };
 
-    const filteredTopics = activeTab === 'Все темы' ? allTopics : allTopics.filter(t => t.author === 'Петя');
+    if (error) return <div className="error">{error}</div>;
 
     return (
         <div className="forum-container">
             <SideBar />
             <main className="main-content">
-                <Breadcrumbs paths={['Главная', 'Форум']} />
-                <Tabs tabs={tabs} onTabChange={setActiveTab} activeTab={activeTab} />
-                <TopicList topics={filteredTopics} />
+                <h1 className="forum-title">Форум кафедры МО ЭВМ</h1>
+                <Breadcrumbs paths={['Главная', 'Форум']}/>
+                {/* ...можно добавить Tabs */}
+                <TopicList
+                    topics={topics}
+                    onTopicClick={handleTopicClick}
+                />
             </main>
         </div>
     );
