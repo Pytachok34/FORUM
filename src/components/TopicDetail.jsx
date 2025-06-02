@@ -110,7 +110,10 @@ const TopicDetail = () => {
                 <div className="comments-section">
                     <h3>Комментарии:</h3>
                     <CommentList comments={comments} />
-                    <CommentForm onAddComment={addComment} />
+                    <CommentForm
+                        onAddComment={addComment}
+                        isAuthenticated={Boolean(localStorage.getItem('token'))}
+                    />
                 </div>
             </main>
         </div>

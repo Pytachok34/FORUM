@@ -27,15 +27,15 @@
     padding: 10px;
     margin-bottom: 10px;
     font-size: 14px;
+    color: #333; /* Добавляем явное указание цвета текста */
+    background-color: #fff; /* Гарантируем белый фон поля */
+    border: 1px solid #ccc; /* Добавляем границу для лучшей видимости */
 }
 
-.auth-error {
-    color: red;
-    font-size: 13px;
-    text-align: center;
-    margin-bottom: 10px;
+/* Для поля пароля можно добавить специальные стили */
+.auth-modal input[type="password"] {
+    letter-spacing: 1px; /* Делает точки пароля более различимыми */
 }
-
 .auth-modal button {
     width: 100%;
     padding: 10px;
@@ -43,8 +43,22 @@
     font-weight: bold;
     font-size: 14px;
     cursor: pointer;
+    color: #fff;
+    background: #007bff;
+    border: none;
+    border-radius: 4px;
 }
 
 .cancel {
-    background: #ccc;
+    background: #6c757d;
+}
+
+.auth-error {
+    color: #dc3545;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #f8d7da;
+    border-radius: 4px;
 }
