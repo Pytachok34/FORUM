@@ -1,8 +1,7 @@
-// server/routes/topics.js
+// backend/routes/topics.js
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-
 // Получить все темы
 router.get('/', async (req, res) => {
     try {

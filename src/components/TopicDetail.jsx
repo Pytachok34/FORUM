@@ -1,4 +1,6 @@
-import React, {useEffect, useState} from 'react';
+//src/components/TopicDetail.jsx
+
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../assets/TopicDetail.css';
 import SideBar from './SideBar';
@@ -17,9 +19,11 @@ const TopicDetail = () => {
             try {
                 const res = await fetch(`http://localhost:5000/api/topics/${id}`);
                 if (!res.ok) {
-                    throw new Error('Тема не найдена');
+                    const text = await res.text();
+                    throw new Error(`Ошибка загрузки темы: ${text}`);
                 }
                 const data = await res.json();
+
                 setTopic(data.topic);
                 setComments(data.comments);
             } catch (err) {
@@ -31,49 +35,52 @@ const TopicDetail = () => {
 
         fetchTopic();
     }, [id]);
+
     const addComment = async (content) => {
         try {
-            const res = await fetch('http://localhost:5000/api/comments', {
+            const token = localStorage.getItem('token');
+
+            // Улучшенная проверка токена
+            if (!token) {
+                throw new Error('Пожалуйста, войдите чтобы оставить комментарий');
+            }
+
+            // Проверка базового формата JWT
+            if (!token.startsWith('eyJ') || token.split('.').length !== 3) {
+                localStorage.removeItem('token');
+                throw new Error('Неверный формат токена. Пожалуйста, войдите снова.');
+            }
+
+            const res = await fetch(`http://localhost:5000/api/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({ topic_id: id, content }),
             });
 
+            // Специальная обработка ошибок авторизации
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.reload();
+                throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+            }
+
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Ошибка при добавлении комментария');
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Ошибка при добавлении комментария');
             }
 
             const newComment = await res.json();
             setComments(prev => [...prev, newComment]);
+
         } catch (error) {
+            console.error('Error adding comment:', error);
             alert(error.message);
         }
     };
 
-    const handleAddComment = async (content) => {
-        try {
-            const res = await fetch(`/api/comments`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic_id: id, content }),
-            });
-
-            if (!res.ok) {
-                throw new Error('Ошибка при добавлении комментария');
-            }
-
-            const newComment = await res.json();
-            // Преобразуем дату у нового комментария
-            newComment.date = new Date(newComment.created_at).toLocaleString();
-
-            setComments(prev => [...prev, newComment]);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
     if (loading) {
         return (
             <div className="loading-container">
@@ -121,4 +128,3 @@ const TopicDetail = () => {
 };
 
 export default TopicDetail;
-

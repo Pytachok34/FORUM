@@ -204,3 +204,49 @@
     margin: 0;
     color: #666;
 }
+/* ForumPage.css */
+
+.search-form {
+    margin: 20px 0;
+    display: flex;
+    max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    margin: 20px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    border: 2px solid #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: background-color 0.3s;
+}
+
+.search-button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Для адаптивности */
+@media (max-width: 480px) {
+    .search-form {
+        max-width: 100%;
+    }
+}

@@ -1,11 +1,10 @@
-import React, {useRef, useState} from 'react';
-import '../assets/CommentForm.css'
+// src/components/CommentForm.jsx
+import React, { useState } from 'react';
+import '../assets/CommentForm.css';
 
 const CommentForm = ({ onAddComment, isAuthenticated }) => {
     const [content, setContent] = useState('');
-    const [files, setFiles] = useState([]);
     const [showAuthAlert, setShowAuthAlert] = useState(false);
-    const fileInputRef = useRef(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,37 +14,14 @@ const CommentForm = ({ onAddComment, isAuthenticated }) => {
             return;
         }
 
-        if (!content.trim() && files.length === 0) return;
+        if (!content.trim()) return;
 
         try {
-            const formData = new FormData();
-            formData.append('content', content);
-
-            files.forEach(file => {
-                formData.append('files', file);
-            });
-
-            await onAddComment(formData);
+            await onAddComment(content);
             setContent('');
-            setFiles([]);
         } catch (error) {
             console.error('Ошибка при отправке комментария:', error);
         }
-    };
-
-    const handleFileChange = (e) => {
-        const selectedFiles = Array.from(e.target.files);
-        setFiles([...files, ...selectedFiles]);
-    };
-
-    const removeFile = (index) => {
-        const newFiles = [...files];
-        newFiles.splice(index, 1);
-        setFiles(newFiles);
-    };
-
-    const triggerFileInput = () => {
-        fileInputRef.current.click();
     };
 
     const closeAuthAlert = () => {
@@ -70,41 +46,9 @@ const CommentForm = ({ onAddComment, isAuthenticated }) => {
                     placeholder="Напишите комментарий..."
                     rows="4"
                 />
-
-                <div className="file-attachments">
-                    {files.map((file, index) => (
-                        <div key={index} className="file-item">
-                            <span>{file.name}</span>
-                            <button
-                                type="button"
-                                onClick={() => removeFile(index)}
-                                className="remove-file"
-                            >
-                                ×
-                            </button>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="form-actions">
-                    <button
-                        type="button"
-                        onClick={triggerFileInput}
-                        className="attach-file-btn"
-                    >
-                        Прикрепить файл
-                    </button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        multiple
-                        style={{ display: 'none' }}
-                    />
-                    <button type="submit" className="submit-comment">
-                        Добавить комментарий
-                    </button>
-                </div>
+                <button type="submit" className="submit-comment">
+                    Добавить комментарий
+                </button>
             </form>
         </div>
     );

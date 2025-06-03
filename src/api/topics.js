@@ -1,16 +1,8 @@
-
-
-export async function fetchTopics() {
-    try {
-        const response = await fetch(`http://localhost:5000/api/topics/`);
-
-        if (!response.ok) {
-            throw new Error('Ошибка при загрузке тем');
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error(error);
-        throw error;
+export const fetchTopics = async () => {
+    const res = await fetch('http://localhost:5000/api/topics');
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Ошибка загрузки тем: ${text}`);
     }
-}
+    return await res.json();
+};

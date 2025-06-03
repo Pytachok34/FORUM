@@ -1,32 +1,44 @@
-// backend/routes/userRoutes.js
+// userRoutes.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const pool = require('../config/db');
 
-const SECRET_KEY = process.env.SECRET_KEY;
+const generateToken = (userId) => {
+    return jwt.sign({ userId }, process.env.SECRET_KEY, { expiresIn: '7d' });
+};
 
 // Регистрация
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
+    if (!username || !email || !password)
+        return res.status(400).json({ error: 'Все поля обязательны' });
+
     try {
-        const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (existing.rows.length > 0) {
-            return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+        const userExists = await pool.query('SELECT id FROM users WHERE email = $1 OR username = $2', [email, username]);
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ error: 'Пользователь уже существует' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-            `INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email`,
+
+        const newUser = await pool.query(
+            `INSERT INTO users (username, email, password_hash)
+       VALUES ($1, $2, $3) RETURNING id, username`,
             [username, email, hashedPassword]
         );
 
-        res.status(201).json(result.rows[0]);
+        const token = generateToken(newUser.rows[0].id);
+
+        res.status(201).json({
+            user: newUser.rows[0],
+            token,
+        });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Ошибка регистрации' });
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
@@ -34,21 +46,34 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
+    if (!email || !password)
+        return res.status(400).json({ error: 'Все поля обязательны' });
+
     try {
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-        if (!user) return res.status(400).json({ error: 'Неверный email или пароль' });
+        if (user.rows.length === 0) {
+            return res.status(401).json({ error: 'Неверный email или пароль' });
+        }
 
-        const isValid = await bcrypt.compare(password, user.password_hash);
-        if (!isValid) return res.status(400).json({ error: 'Неверный email или пароль' });
+        const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
 
-        const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '7d' });
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Неверный email или пароль' });
+        }
 
-        res.json({ token, username: user.username });
+        const token = generateToken(user.rows[0].id);
+
+        res.json({
+            user: {
+                id: user.rows[0].id,
+                username: user.rows[0].username,
+            },
+            token,
+        });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Ошибка входа' });
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
